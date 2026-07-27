@@ -1,0 +1,47 @@
+.page{padding:32px 36px 60px}
+.container{max-width:1000px}
+.pageHeader{margin-bottom:28px}
+.pageTitle{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px}
+.pageSub{font-size:13.5px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+.leftCol,.rightCol{display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+.cardHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
+.cardTitle{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);margin-bottom:3px}
+.avatarRow{display:flex;align-items:center;gap:16px;margin-bottom:4px}
+.avatarBig{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:24px;font-weight:700;color:#fff;flex-shrink:0;transition:background 0.3s ease}
+.userName{font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px}
+.userEmail{font-size:13px;color:var(--muted);margin-bottom:2px}
+.memberSince{font-size:11.5px;color:var(--muted)}
+.colorSection{border-top:1px solid var(--border);padding-top:16px;margin-top:16px}
+.colorGrid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.swatch{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform 0.15s ease}
+.swatch:hover{transform:scale(1.15)}
+.swatchActive{border-color:#fff!important;box-shadow:0 0 0 2px var(--accent);transform:scale(1.15)}
+.statsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.barLabel{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.barTrack{width:100%;height:7px;background:var(--border);border-radius:100px;overflow:hidden}
+.barFill{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:100px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);min-width:4px}
+.fields{display:flex;flex-direction:column;gap:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.label{font-size:11.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+.fieldVal{font-size:14.5px;color:var(--text);line-height:1.5}
+.fieldEmpty{color:var(--muted);font-style:italic}
+.input{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-size:14px;font-family:var(--font-body);outline:none;width:100%;transition:border-color var(--transition),box-shadow var(--transition)}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.input::placeholder{color:var(--muted);opacity:0.5}
+.textarea{resize:vertical;min-height:80px}
+.pwWrap{position:relative}
+.eyeBtn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;opacity:0.55;transition:opacity var(--transition);line-height:1;padding:2px}
+.eyeBtn:hover{opacity:1}
+.secHint{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
+.editBtn{background:var(--accent-dim);border:1px solid rgba(108,99,255,0.25);border-radius:var(--radius-sm);padding:7px 16px;color:var(--accent);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all var(--transition)}
+.editBtn:hover{background:rgba(108,99,255,0.2)}
+.saveBtn{background:var(--accent);border:none;border-radius:var(--radius-sm);padding:9px 20px;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;min-width:120px;min-height:38px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.saveBtn:hover:not(:disabled){background:var(--accent-hover);box-shadow:0 4px 14px var(--accent-glow);transform:translateY(-1px)}
+.saveBtn:disabled{opacity:0.6;cursor:not-allowed}
+.cancelBtn{background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 16px;color:var(--muted);font-size:13.5px;font-weight:500;cursor:pointer;transition:all var(--transition)}
+.cancelBtn:hover{border-color:var(--text);color:var(--text)}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+@media(max-width:768px){.page{padding:20px 16px 40px;margin-top:56px}.row2{grid-template-columns:1fr}}

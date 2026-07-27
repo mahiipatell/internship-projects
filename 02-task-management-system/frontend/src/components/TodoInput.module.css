@@ -1,0 +1,102 @@
+.wrap {
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.input::placeholder { color: var(--muted); opacity: 0.55; }
+
+.priorities {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.pBtn:hover { border-color: var(--muted); color: var(--text); }
+.pActive { font-weight: 600; }
+
+.addBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  min-width: 80px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.addBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(108, 99, 255, 0.35);
+}
+
+.addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--error);
+}
+
+@media (max-width: 540px) {
+  .row { flex-wrap: wrap; }
+  .input { min-width: 0; }
+  .addBtn { width: 100%; }
+  .priorities { width: 100%; }
+  .pBtn { flex: 1; text-align: center; }
+}

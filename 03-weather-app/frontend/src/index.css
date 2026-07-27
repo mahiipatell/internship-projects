@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font-body:    'Inter', sans-serif;
+  --font-display: 'Sora', sans-serif;
+  --radius:       16px;
+  --radius-sm:    10px;
+  --radius-lg:    24px;
+  --transition:   0.25s ease;
+  --shadow-sm:    0 2px 12px rgba(0,0,0,0.12);
+  --shadow-md:    0 8px 32px rgba(0,0,0,0.18);
+  --shadow-lg:    0 24px 64px rgba(0,0,0,0.28);
+
+  /* Glass card */
+  --glass-bg:     rgba(255,255,255,0.14);
+  --glass-border: rgba(255,255,255,0.22);
+  --glass-hover:  rgba(255,255,255,0.20);
+
+  /* Text on glass */
+  --text-primary:   rgba(255,255,255,0.97);
+  --text-secondary: rgba(255,255,255,0.72);
+  --text-muted:     rgba(255,255,255,0.50);
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+body {
+  font-family: var(--font-body);
+  min-height: 100vh;
+  color: var(--text-primary);
+  background: #1a1a2e;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.6s ease;
+}
+
+input, button, select {
+  font-family: var(--font-body);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* DYNAMIC BACKGROUNDS — applied to <body> by the app based on weather        */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+body.weather-clear-day {
+  background: linear-gradient(160deg, #1a6fa8 0%, #2196f3 40%, #64b5f6 100%);
+}
+
+body.weather-clear-night {
+  background: linear-gradient(160deg, #0a0a1a 0%, #0d1b3e 50%, #1a237e 100%);
+}
+
+body.weather-clouds {
+  background: linear-gradient(160deg, #37474f 0%, #546e7a 50%, #78909c 100%);
+}
+
+body.weather-rain {
+  background: linear-gradient(160deg, #1a237e 0%, #283593 40%, #3949ab 100%);
+}
+
+body.weather-drizzle {
+  background: linear-gradient(160deg, #2e3f5c 0%, #37506e 50%, #4a6380 100%);
+}
+
+body.weather-thunderstorm {
+  background: linear-gradient(160deg, #1a0533 0%, #2d1b4e 40%, #1a237e 100%);
+}
+
+body.weather-snow {
+  background: linear-gradient(160deg, #5c7a9e 0%, #7b9ab2 50%, #b0c4de 100%);
+}
+
+body.weather-mist {
+  background: linear-gradient(160deg, #4a5568 0%, #606878 50%, #78828e 100%);
+}
+
+body.weather-default {
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+/* ── Keyframe animations ─────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}

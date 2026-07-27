@@ -1,0 +1,32 @@
+.toggle {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 100px;
+  padding: 7px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.toggle:hover { background: var(--glass-hover); }
+
+.active {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.inactive {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.sep {
+  font-size: 13px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}

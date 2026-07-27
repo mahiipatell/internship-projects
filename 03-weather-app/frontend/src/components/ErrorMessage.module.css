@@ -1,0 +1,25 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  background: rgba(255,80,80,0.15);
+  border: 1px solid rgba(255,100,100,0.35);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease;
+}
+
+.icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.message {
+  font-size: 14px;
+  color: rgba(255,200,200,0.95);
+  line-height: 1.5;
+}
