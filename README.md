@@ -84,7 +84,7 @@ Upcoming projects will be added using the following structure:
 
 ## 👨‍💻 Author
 
-**Arav Patel**
+**Mahi Patel**
 
 B.Tech Computer Engineering  
 COEP Technological University
