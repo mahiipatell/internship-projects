@@ -1,0 +1,144 @@
+// Prisma schema for the Movie Recommendation System
+// Run `npx prisma migrate dev --name init` after configuring DATABASE_URL in .env
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------
+// ENUMS
+// -----------------------------
+
+enum MediaType {
+  MOVIE
+  TV
+}
+
+// -----------------------------
+// USER
+// -----------------------------
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String // bcrypt hashed
+  avatarUrl String?
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  watchlist      Watchlist[]
+  favorites      Favorite[]
+  ratings        Rating[]
+  watchHistory   WatchHistory[]
+  favoriteGenres FavoriteGenre[]
+
+  @@map("users")
+}
+
+// -----------------------------
+// FAVORITE GENRES (used to weight recommendations)
+// -----------------------------
+
+model FavoriteGenre {
+  id       String @id @default(uuid())
+  userId   String
+  genreId  Int
+  genreName String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, genreId])
+  @@map("favorite_genres")
+}
+
+// -----------------------------
+// WATCHLIST
+// -----------------------------
+
+model Watchlist {
+  id          String    @id @default(uuid())
+  userId      String
+  tmdbId      Int
+  mediaType   MediaType
+  title       String
+  posterPath  String?
+  releaseDate String?
+  voteAverage Float?
+  addedAt     DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tmdbId, mediaType])
+  @@map("watchlist")
+}
+
+// -----------------------------
+// FAVORITES
+// -----------------------------
+
+model Favorite {
+  id          String    @id @default(uuid())
+  userId      String
+  tmdbId      Int
+  mediaType   MediaType
+  title       String
+  posterPath  String?
+  releaseDate String?
+  voteAverage Float?
+  genreIds    Int[]     @default([])
+  addedAt     DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tmdbId, mediaType])
+  @@map("favorites")
+}
+
+// -----------------------------
+// RATINGS (user's own ratings, 1-10)
+// -----------------------------
+
+model Rating {
+  id         String    @id @default(uuid())
+  userId     String
+  tmdbId     Int
+  mediaType  MediaType
+  title      String
+  posterPath String?
+  score      Float // 1.0 - 10.0
+  review     String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tmdbId, mediaType])
+  @@map("ratings")
+}
+
+// -----------------------------
+// WATCH HISTORY
+// -----------------------------
+
+model WatchHistory {
+  id          String    @id @default(uuid())
+  userId      String
+  tmdbId      Int
+  mediaType   MediaType
+  title       String
+  posterPath  String?
+  genreIds    Int[]     @default([])
+  watchedAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("watch_history")
+}

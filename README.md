@@ -36,6 +36,8 @@ This repository contains a collection of full-stack web applications developed d
 | 01 | JWT Authentication System | Secure authentication using JWT, bcrypt and PostgreSQL | ✅ Completed |
 | 02 | Task Management System | Full-stack task manager with authentication and CRUD functionality | ✅ Completed |
 | 03 | WeatherNow | Real-time weather application powered by OpenWeatherMap API | ✅ Completed |
+| 04  | Movie Recommendation System | Full-stack movie recommendation platform using TMDB API with authentication, watchlist, favorites, ratings, and personalized recommendations | ✅ Completed when finished |
+
 
 ---
 
@@ -47,6 +49,7 @@ internship-projects/
 ├── 01-jwt-authentication/
 ├── 02-task-management-system/
 ├── 03-weather-app/
+├── 04-movie-recommendation-system/
 └── README.md
 ```
 
