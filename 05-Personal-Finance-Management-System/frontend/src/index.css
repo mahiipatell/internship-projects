@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply text-olive-900 dark:text-gray-100 antialiased font-sans bg-cream dark:bg-gray-950;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoom-in-95 {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.animate-page-in {
+  animation: fade-in-up 0.35s ease-out both;
+}
+
+.animate-in {
+  animation: fade-in 0.15s ease-out both;
+}
+
+.animate-in.zoom-in-95 {
+  animation: fade-in 0.15s ease-out both, zoom-in-95 0.18s ease-out both;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f2ede0 25%, #faf6ea 37%, #f2ede0 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, #1f2937 25%, #26303f 37%, #1f2937 63%);
+  background-size: 800px 100%;
+}
