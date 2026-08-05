@@ -1,227 +1,248 @@
-# Personal Finance Management System
+# Expense Tracker — AI-Powered Personal Finance Manager
 
-A full-stack Personal Finance Management System that helps users manage their income, expenses, monthly budgets, and financial goals through an intuitive dashboard. The application includes secure authentication, transaction management, analytics, customizable financial planning, reporting, and statement import capabilities.
+A modern full-stack personal finance application built using React, Express.js, PostgreSQL, and Firebase Authentication. The application helps users track income and expenses, plan monthly budgets, monitor savings goals, import bank statements, analyze spending patterns, and manage recurring transactions through an intuitive dashboard.
 
 ---
 
-## ✨ Features
+## Features
 
 ### Authentication
 
-- User Registration & Login
-- JWT Authentication
-- Password Hashing using bcrypt
-- Protected Routes
-- Persistent User Sessions
+- Firebase Email & Password Authentication
+- Google Sign-In
+- Persistent Login Sessions
+- Secure Backend Token Verification
+- User Profile Management
+
+---
 
 ### Dashboard
 
-- Financial Overview Dashboard
-- Total Income
-- Total Expenses
-- Current Balance
+- Financial Overview
+- Income vs Expense Summary
+- Recent Transactions
+- Monthly Spending Insights
+- Budget Progress
 - Savings Overview
-- Monthly Financial Summary
+- Quick Statistics
 
-### Transaction Management
+---
+
+### Transactions
 
 - Add Income & Expenses
 - Edit Transactions
 - Delete Transactions
+- Category-Based Organization
+- Transaction Notes
+- Payment Method Tracking
+- Merchant Tracking
+- Date-Based Filtering
 - Search Transactions
-- Filter by Category
-- Filter by Date
-- Transaction History
 
-### Monthly Financial Plan
+---
 
-- Custom Monthly Budget Planning
-- User-defined Budget Categories
-- Budget Allocation Tracking
-- Spending Progress
-- Savings Goal Tracking
-- Budget Utilization
-- Overspending Alerts
+### Budget Planner
 
-### Analytics & Reports
+- Monthly Financial Planning
+- Enable/Disable Budget Mode
+- Monthly Income Configuration
+- Savings Goal Planning
+- Custom Budget Allocation
+- Category-Wise Budget Tracking
+- Budget Progress Indicators
 
-- Income vs Expense Charts
-- Category-wise Spending Analysis
-- Monthly Financial Insights
+---
+
+### Savings Goals
+
+- Create Savings Goals
+- Track Progress
+- Goal Completion Status
+- Custom Icons & Colors
+- Target Amount Management
+
+---
+
+### Recurring Transactions
+
+- Create Recurring Income
+- Create Recurring Expenses
+- Daily
+- Weekly
+- Monthly
+- Yearly Frequency
+- Automatic Due Detection
+
+---
+
+### Categories
+
+- Default Categories
+- Custom Categories
+- Income Categories
+- Expense Categories
+- Icons & Colors
+
+---
+
+### Import Features
+
+- CSV Bank Statement Import
+- PDF Statement Upload (Foundation Added)
+- Import History
+- Duplicate Protection
+- Automatic Category Detection (In Progress)
+
+---
+
+### Analytics
+
+- Spending Insights
+- Income Analysis
 - Expense Breakdown
-- CSV Export
-- Excel Export
-- PDF Report Generation
+- Monthly Reports
+- Category Statistics
+- Financial Trends
 
-### Import Center
-
-- Import Bank Statements (.csv)
-- Import Credit Card Statements (.csv)
-- Import Excel Statements (.xlsx)
-- Import UPI Export Files (.csv)
-- Automatic Transaction Categorization
-- Duplicate Transaction Detection
-- Transaction Preview Before Import
+---
 
 ### User Experience
 
 - Responsive Design
-- Premium FinTech-inspired UI
 - Modern Dashboard
-- Interactive Charts
+- Butter Yellow + White + Pastel Green Theme
 - Smooth Animations
+- Mobile Friendly
+- Clean UI Components
 
 ---
 
-# 🚀 Tech Stack
+## Tech Stack
 
-## Frontend
+### Frontend
 
-- React 19
+- React
 - Vite
-- Tailwind CSS
 - React Router
+- Tailwind CSS
 - Axios
-- React Hook Form
+- Firebase Authentication
 - Recharts
-- Lucide React
-- PapaParse
-- XLSX
 
-## Backend
+---
+
+### Backend
 
 - Node.js
 - Express.js
 - PostgreSQL
-- JWT Authentication
-- bcrypt
-- REST APIs
+- Firebase Admin SDK
+- JWT Verification
+- Multer
+- pdf-parse
+- csv-parser
 
-## Database
+---
+
+### Database
 
 - PostgreSQL
 
-## Tools
+Core Tables
 
-- Git
-- GitHub
-- VS Code
-- Postman
-
----
-
-# ⚙️ Setup
-
-## Backend
-
-```bash
-cd backend
-npm install
-cp .env.example .env
-```
-
-Configure `.env`
-
-```env
-PORT=5000
-DATABASE_URL=your_postgresql_connection_string
-JWT_SECRET=your_secret_key
-CLIENT_URL=http://localhost:5173
-```
-
-Run database migration
-
-```bash
-npm run db:migrate
-```
-
-Start backend
-
-```bash
-npm run dev
-```
-
-Backend runs on
-
-```
-http://localhost:5000
-```
+- Users
+- Categories
+- Transactions
+- Budgets
+- Budget Allocations
+- Savings Goals
+- Recurring Transactions
+- Import Batches
 
 ---
 
-## Frontend
-
-```bash
-cd frontend
-npm install
-cp .env.example .env
-```
-
-Configure `.env`
-
-```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-Start frontend
-
-```bash
-npm run dev
-```
-
-Frontend runs on
+## Authentication Flow
 
 ```
-http://localhost:5173
-```
-
----
-
-# 🏗️ Architecture
-
-```
-React Frontend (Vite)
+React Frontend
         │
         ▼
-Axios API Requests
+Firebase Authentication
+        │
+        ▼
+Firebase ID Token
+        │
+        ▼
+Express Backend
+        │
+        ▼
+Firebase Admin SDK
+        │
+        ▼
+PostgreSQL User Profile
+```
+
+---
+
+## Application Architecture
+
+```
+React Frontend
+        │
+Axios Requests
         │
         ▼
 Express REST API
         │
         ▼
-JWT Authentication
+Controllers
         │
         ▼
-Business Logic
+Models
         │
         ▼
-PostgreSQL Database
+PostgreSQL
+```
+
+```
+CSV Upload
+        │
+        ▼
+Parser
+        │
+        ▼
+Transaction Import
+        │
+        ▼
+PostgreSQL
+```
+
+```
+PDF Statement
+        │
+        ▼
+PDF Parser
+        │
+        ▼
+Transaction Extraction
+        │
+        ▼
+PostgreSQL
 ```
 
 ---
 
-# 📡 Major API Modules
+## Folder Structure
 
-| Module | Description |
-|---------|-------------|
-| Authentication | User Registration & Login |
-| Dashboard | Financial Summary |
-| Transactions | Income & Expense CRUD |
-| Categories | Expense Categories |
-| Monthly Financial Plan | Budget Management |
-| Reports | Financial Reports |
-| Import Center | CSV & Excel Transaction Import |
-| User Profile | Profile Management |
+```
+expense-tracker/
 
----
-
-# 📁 Project Structure
-
-```text
-05-personal-finance-management-system/
-│
 ├── backend/
 │   ├── database/
+│   │   ├── schema.sql
+│   │   └── migrate.js
+│   │
 │   ├── src/
 │   │   ├── config/
 │   │   ├── controllers/
@@ -230,66 +251,173 @@ PostgreSQL Database
 │   │   ├── routes/
 │   │   ├── services/
 │   │   ├── utils/
-│   │   ├── validations/
 │   │   ├── app.js
 │   │   └── server.js
-│   ├── package.json
-│   └── .env.example
+│   │
+│   └── package.json
 │
 └── frontend/
     ├── src/
+    │   ├── assets/
     │   ├── components/
-    │   ├── pages/
     │   ├── context/
-    │   ├── services/
     │   ├── hooks/
     │   ├── layouts/
+    │   ├── pages/
+    │   ├── services/
     │   ├── utils/
-    │   └── App.jsx
-    ├── package.json
-    └── vite.config.js
+    │   ├── App.jsx
+    │   └── main.jsx
+    │
+    └── package.json
 ```
 
 ---
 
-# 🎯 Learning Outcomes
+## Setup
 
-- Full-Stack Web Development
-- JWT Authentication
+### Clone Repository
+
+```bash
+git clone <repository-url>
+
+cd expense-tracker
+```
+
+---
+
+### Backend
+
+```bash
+cd backend
+
+npm install
+
+cp .env.example .env
+```
+
+Configure `.env`
+
+```env
+PORT=5000
+
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=expense_tracker
+DB_USER=postgres
+DB_PASSWORD=your_password
+
+CLIENT_URL=http://localhost:5173
+
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_CLIENT_EMAIL=your_client_email
+FIREBASE_PRIVATE_KEY=your_private_key
+```
+
+Run database migration
+
+```bash
+npm run migrate
+```
+
+Start backend
+
+```bash
+npm run dev
+```
+
+Runs on
+
+```
+http://localhost:5000
+```
+
+---
+
+### Frontend
+
+```bash
+cd frontend
+
+npm install
+
+cp .env.example .env
+```
+
+Configure
+
+```env
+VITE_API_URL=http://localhost:5000/api
+
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+Run
+
+```bash
+npm run dev
+```
+
+Runs on
+
+```
+http://localhost:5173
+```
+
+---
+
+## Future Improvements
+
+- AI Receipt OCR
+- Automatic Expense Categorization
+- Bank API Integration
+- UPI Synchronization
+- Investment Portfolio Tracking
+- Net Worth Dashboard
+- Bill Payment Reminders
+- Export to Excel & PDF
+- Progressive Web App (PWA)
+- Mobile Application (React Native / Expo)
+- Multi-Currency Support
+- Shared Family Budget
+- AI Spending Insights
+- AI Financial Recommendations
+
+---
+
+## Learning Outcomes
+
+- Full-Stack Development
+- Firebase Authentication
 - PostgreSQL Database Design
 - REST API Development
-- CRUD Operations
-- Budget Planning System
-- Financial Data Visualization
-- File Import & Data Processing
+- Secure Authentication
+- File Upload & Processing
+- CSV Parsing
+- PDF Processing
+- Dashboard Development
+- Data Visualization
 - Responsive UI Design
-- Component-Based Architecture
-- State Management
-- Secure Backend Development
+- Financial Data Modeling
+- Production Project Architecture
 
 ---
 
-# 🚀 Future Improvements
+## License
 
-- PDF Bank Statement Import
-- Firebase Authentication
-- Google Sign-In
-- Mobile Application
-- Receipt OCR
-- Smart Financial Insights
-- Investment Tracking
-- Push Notifications
-- Cloud Synchronization
+This project is developed for educational and portfolio purposes.
 
 ---
 
-# 👨‍💻 Author
+## Author
 
 **Mahi Patel**
 
-B.Tech Computer Engineering  
-COEP Technological University
+B.Tech Computer Engineering • COEP Technological University
 
----
-
-⭐ If you found this project interesting, feel free to explore the codebase and try it locally!
+GitHub: https://github.com/mahiipatell

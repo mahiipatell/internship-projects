@@ -7,6 +7,7 @@ const transactionValidation = [
   body('categoryId').isInt().withMessage('A valid category is required'),
   body('date').isISO8601().withMessage('A valid date is required'),
   body('notes').optional({ checkFalsy: true }).isLength({ max: 1000 }),
+  body('accountId').optional({ checkFalsy: true }).isInt().withMessage('Invalid account'),
 ];
 
 const listQueryValidation = [

@@ -34,6 +34,14 @@ export const IMPORT_FORMATS = [
     fileAccept: '.csv',
     parserId: 'upi',
   },
+  {
+    id: 'pdf-bank',
+    label: 'Bank Statement (.pdf)',
+    emoji: '📄',
+    description: 'Text-based PDF statement (SBI, HDFC, ICICI, Axis, Kotak, IDFC, BoB)',
+    fileAccept: '.pdf',
+    parserId: 'pdf',
+  },
 ];
 
 function ImportFormatSelector({ selected, onSelect }) {

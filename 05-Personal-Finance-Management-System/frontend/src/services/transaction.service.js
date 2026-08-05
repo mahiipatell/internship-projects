@@ -17,6 +17,7 @@ const transactionService = {
     api
       .get('/transactions/analytics/category-breakdown', { params })
       .then((res) => res.data.data.breakdown),
+  getInsights: () => api.get('/transactions/insights').then((res) => res.data.data),
   checkDuplicates: (transactions) =>
     api
       .post('/transactions/import/check-duplicates', { transactions })

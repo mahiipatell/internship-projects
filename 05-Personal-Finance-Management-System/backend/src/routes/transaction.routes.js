@@ -12,6 +12,7 @@ const {
   getCategoryBreakdown,
   bulkImportTransactions,
   checkDuplicates,
+  getInsights,
 } = require('../controllers/transaction.controller');
 const { transactionValidation, listQueryValidation } = require('../validations/transaction.validation');
 const validate = require('../middleware/validate.middleware');
@@ -23,6 +24,7 @@ router.use(protect);
 router.get('/summary', getSummary);
 router.get('/analytics/monthly', getMonthlyAnalytics);
 router.get('/analytics/category-breakdown', getCategoryBreakdown);
+router.get('/insights', getInsights);
 
 // CSV Import Center (also before "/:id")
 router.post('/import/check-duplicates', checkDuplicates);

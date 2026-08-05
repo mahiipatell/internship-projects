@@ -8,14 +8,19 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+console.log("===== ENV CHECK =====");
+console.log("__dirname:", __dirname);
+console.log("cwd:", process.cwd());
+console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_PORT:", process.env.DB_PORT);
+console.log("=====================");
+
 const pool = new Pool({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  port: Number(process.env.DB_PORT),
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  max: 10, // max simultaneous connections in the pool
-  idleTimeoutMillis: 30000,
 });
 
 pool.on('error', (err) => {

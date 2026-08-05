@@ -12,10 +12,14 @@ import { detectColumns, validateColumnMap, normalizeRows } from '../../utils/imp
 import { parseCsvFile } from '../../utils/parsers/csvParser';
 import { parseExcelFile } from '../../utils/parsers/excelParser';
 import { detectUpiProvider } from '../../utils/parsers/upiProviders';
+import { extractPdfText } from '../../utils/parsers/pdfParser';
+import { detectBank, getParserById, parseGeneric } from '../../utils/parsers/pdfParsers/parserFactory';
 import { computeImportStats } from '../../utils/importStats';
 import transactionService from '../../services/transaction.service';
 import categoryService from '../../services/category.service';
 import budgetService from '../../services/budget.service';
+import importHistoryService from '../../services/importHistory.service';
+import BankSelector from './BankSelector';
 
 const STEPS = ['Choose Import Type', 'Upload File', 'Preview Transactions', 'Review Categories', 'Import Summary'];
 
@@ -60,6 +64,9 @@ function ImportWizard() {
   const [importStats, setImportStats] = useState(null);
   const [budgetSnapshot, setBudgetSnapshot] = useState(null);
   const [manualMapping, setManualMapping] = useState(null); // { headers } when auto-detect fails
+  const [pendingBankSelection, setPendingBankSelection] = useState(null); // { text } when bank detection fails
+  const [bankChoice, setBankChoice] = useState('');
+  const [importMeta, setImportMeta] = useState({ detectedBank: null, parserUsed: null, startedAt: null });
 
   useEffect(() => {
     categoryService.getCategories('expense').then((expenseCats) => {
@@ -94,8 +101,10 @@ function ImportWizard() {
     if (format === 'upi-csv') {
       const provider = detectUpiProvider(headers);
       setDetectedLabel(provider ? `Detected: ${provider.label} export` : '');
-    } else {
+      setImportMeta((m) => ({ ...m, detectedBank: provider ? provider.label : null, parserUsed: 'upi' }));
+    } else if (selectedFormat.parserId !== 'pdf') {
       setDetectedLabel('');
+      setImportMeta((m) => ({ ...m, parserUsed: selectedFormat.parserId }));
     }
 
     const columnMap = detectColumns(headers);
@@ -127,8 +136,32 @@ function ImportWizard() {
 
     setFileName(file.name);
     setProcessing(true);
+    setImportMeta({ detectedBank: null, parserUsed: null, startedAt: Date.now() });
 
     try {
+      if (selectedFormat.parserId === 'pdf') {
+        const text = await extractPdfText(file);
+        const bankParser = detectBank(text);
+
+        if (bankParser) {
+          setDetectedLabel(`Detected: ${bankParser.label} statement`);
+          setImportMeta((m) => ({ ...m, detectedBank: bankParser.label, parserUsed: bankParser.id }));
+          const { headers, rows: rawRows } = bankParser.parse(text);
+          if (rawRows.length === 0) {
+            setFileError('This statement format is not supported yet. Please select your bank below, or try CSV/Excel export instead.');
+            setPendingBankSelection({ text });
+            setProcessing(false);
+            return;
+          }
+          await runDetection(headers, rawRows);
+        } else {
+          // Detection failed — let the user pick their bank manually.
+          setPendingBankSelection({ text });
+          setProcessing(false);
+        }
+        return;
+      }
+
       let headers, rawRows;
       if (selectedFormat.parserId === 'excel') {
         const parsed = await parseExcelFile(file);
@@ -144,6 +177,28 @@ function ImportWizard() {
       setFileError(err.message || 'Something went wrong reading this file.');
       setProcessing(false);
     }
+  };
+
+  const handleBankConfirm = async () => {
+    setProcessing(true);
+    setFileError('');
+    const { text } = pendingBankSelection;
+
+    const parser = bankChoice ? getParserById(bankChoice) : null;
+    const parserLabel = parser ? parser.label : 'Generic';
+    setImportMeta((m) => ({ ...m, detectedBank: parserLabel, parserUsed: parser ? parser.id : 'generic' }));
+    setDetectedLabel(`Using: ${parserLabel} parser`);
+
+    const { headers, rows: rawRows } = parser ? parser.parse(text) : parseGeneric(text);
+
+    if (rawRows.length === 0) {
+      setFileError("Unable to detect any transactions in this statement. Please try a different bank selection, or export as CSV/Excel instead.");
+      setProcessing(false);
+      return;
+    }
+
+    setPendingBankSelection(null);
+    await runDetection(headers, rawRows);
   };
 
   const handleManualMappingConfirm = async (columnMap) => {
@@ -178,6 +233,23 @@ function ImportWizard() {
       setImportResult({ ...result, skippedDuplicates });
       setImportStats(computeImportStats(toImport));
       setBudgetSnapshot(budget);
+
+      const status = result.failed > 0 ? (result.imported > 0 ? 'partial' : 'failed') : 'success';
+      importHistoryService
+        .createRecord({
+          fileName,
+          importType: format,
+          detectedBank: importMeta.detectedBank,
+          parserUsed: importMeta.parserUsed,
+          totalRows: rows.length,
+          transactionsImported: result.imported,
+          duplicatesSkipped: skippedDuplicates,
+          failedRows: result.failed,
+          importDurationMs: importMeta.startedAt ? Date.now() - importMeta.startedAt : null,
+          status,
+        })
+        .catch(() => {});
+
       setStep(4);
     } finally {
       setProcessing(false);
@@ -210,6 +282,18 @@ function ImportWizard() {
               onConfirm={handleManualMappingConfirm}
               onCancel={() => setManualMapping(null)}
             />
+          ) : pendingBankSelection ? (
+            <>
+              {fileError && (
+                <div className="text-sm text-expense bg-expense/10 rounded-xl px-4 py-2.5">{fileError}</div>
+              )}
+              <BankSelector
+                value={bankChoice}
+                onChange={setBankChoice}
+                onConfirm={handleBankConfirm}
+                onCancel={() => setPendingBankSelection(null)}
+              />
+            </>
           ) : (
             <>
               <FileDropzone

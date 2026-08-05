@@ -18,7 +18,9 @@
     "lucide-react": "^0.468.0",
     "recharts": "^2.13.3",
     "papaparse": "^5.4.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "firebase": "^10.14.1",
+    "pdfjs-dist": "^4.0.379"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

@@ -60,9 +60,11 @@ const TransactionModel = {
     const dataParams = [...params, limit, offset];
     const dataQuery = `
       SELECT t.id, t.title, t.amount, t.type, t.date, t.notes, t.created_at,
-             c.id AS category_id, c.name AS category_name
+             c.id AS category_id, c.name AS category_name,
+             a.id AS account_id, a.name AS account_name
       FROM transactions t
       JOIN categories c ON c.id = t.category_id
+      LEFT JOIN accounts a ON a.id = t.account_id
       WHERE ${whereClause}
       ORDER BY ${sortColumn} ${order}, t.id DESC
       LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}
@@ -83,21 +85,22 @@ const TransactionModel = {
 
   async findById(id, userId) {
     const { rows } = await pool.query(
-      `SELECT t.*, c.name AS category_name
+      `SELECT t.*, c.name AS category_name, a.name AS account_name
        FROM transactions t
        JOIN categories c ON c.id = t.category_id
+       LEFT JOIN accounts a ON a.id = t.account_id
        WHERE t.id = $1 AND t.user_id = $2`,
       [id, userId]
     );
     return rows[0];
   },
 
-  async create(userId, { title, amount, type, categoryId, date, notes }) {
+  async create(userId, { title, amount, type, categoryId, date, notes, accountId }) {
     const { rows } = await pool.query(
-      `INSERT INTO transactions (user_id, category_id, title, amount, type, date, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO transactions (user_id, category_id, account_id, title, amount, type, date, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [userId, categoryId, title, amount, type, date, notes || null]
+      [userId, categoryId, accountId || null, title, amount, type, date, notes || null]
     );
     return rows[0];
   },
@@ -115,13 +118,13 @@ const TransactionModel = {
     return rows.length > 0;
   },
 
-  async update(id, userId, { title, amount, type, categoryId, date, notes }) {
+  async update(id, userId, { title, amount, type, categoryId, date, notes, accountId }) {
     const { rows } = await pool.query(
       `UPDATE transactions
-       SET title = $1, amount = $2, type = $3, category_id = $4, date = $5, notes = $6
-       WHERE id = $7 AND user_id = $8
+       SET title = $1, amount = $2, type = $3, category_id = $4, date = $5, notes = $6, account_id = $7
+       WHERE id = $8 AND user_id = $9
        RETURNING *`,
-      [title, amount, type, categoryId, date, notes || null, id, userId]
+      [title, amount, type, categoryId, date, notes || null, accountId || null, id, userId]
     );
     return rows[0];
   },
@@ -199,6 +202,34 @@ const TransactionModel = {
       params
     );
     return rows;
+  },
+
+  async getTopMerchant(userId, { from, to } = {}) {
+    const { whereClause, params } = buildFilters({ userId, from, to, type: 'expense' });
+    const { rows } = await pool.query(
+      `SELECT t.title, COUNT(*)::int AS visits
+       FROM transactions t
+       WHERE ${whereClause}
+       GROUP BY t.title
+       ORDER BY visits DESC, t.title ASC
+       LIMIT 1`,
+      params
+    );
+    return rows[0];
+  },
+
+  async getHighestExpense(userId, { from, to } = {}) {
+    const { whereClause, params } = buildFilters({ userId, from, to, type: 'expense' });
+    const { rows } = await pool.query(
+      `SELECT t.title, t.amount, t.date, c.name AS category_name
+       FROM transactions t
+       JOIN categories c ON c.id = t.category_id
+       WHERE ${whereClause}
+       ORDER BY t.amount DESC
+       LIMIT 1`,
+      params
+    );
+    return rows[0];
   },
 };
 

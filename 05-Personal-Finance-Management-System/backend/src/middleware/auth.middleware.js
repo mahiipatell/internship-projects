@@ -1,8 +1,14 @@
-const jwt = require('jsonwebtoken');
+const admin = require('../config/firebase');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
-const pool = require('../config/db');
+const UserModel = require('../models/user.model');
 
+/**
+ * Verifies the Firebase ID token sent by the client, then finds (or
+ * transparently creates) the matching Postgres user row keyed on
+ * firebase_uid. This is the only place the two identity systems meet —
+ * every other controller just uses req.user.id like before.
+ */
 const protect = asyncHandler(async (req, res, next) => {
   let token;
   const authHeader = req.headers.authorization;
@@ -17,21 +23,25 @@ const protect = asyncHandler(async (req, res, next) => {
 
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
+    decoded = await admin.auth().verifyIdToken(token);
   } catch (err) {
     throw new ApiError(401, 'Not authorized, token invalid or expired');
   }
 
-  const { rows } = await pool.query(
-    'SELECT id, name, email, created_at FROM users WHERE id = $1',
-    [decoded.id]
-  );
+  let user = await UserModel.findByFirebaseUid(decoded.uid);
 
-  if (rows.length === 0) {
-    throw new ApiError(401, 'Not authorized, user no longer exists');
+  if (!user) {
+    user = await UserModel.createFromFirebase({
+      firebaseUid: decoded.uid,
+      email: decoded.email,
+      name: decoded.name || (decoded.email ? decoded.email.split('@')[0] : 'User'),
+      emailVerified: decoded.email_verified,
+    });
+  } else if (user.email_verified !== !!decoded.email_verified) {
+    user = await UserModel.updateEmailVerified(user.id, !!decoded.email_verified);
   }
 
-  req.user = rows[0];
+  req.user = user;
   next();
 });
 

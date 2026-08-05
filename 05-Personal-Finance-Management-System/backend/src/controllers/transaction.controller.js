@@ -58,7 +58,7 @@ const getTransaction = asyncHandler(async (req, res) => {
 });
 
 const createTransaction = asyncHandler(async (req, res) => {
-  const { title, amount, type, categoryId, date, notes } = req.body;
+  const { title, amount, type, categoryId, date, notes, accountId } = req.body;
   await assertCategoryOwnedOrDefault(categoryId, req.user.id);
 
   const transaction = await TransactionModel.create(req.user.id, {
@@ -68,13 +68,14 @@ const createTransaction = asyncHandler(async (req, res) => {
     categoryId,
     date,
     notes,
+    accountId,
   });
 
   res.status(201).json({ success: true, data: { transaction } });
 });
 
 const updateTransaction = asyncHandler(async (req, res) => {
-  const { title, amount, type, categoryId, date, notes } = req.body;
+  const { title, amount, type, categoryId, date, notes, accountId } = req.body;
   await assertCategoryOwnedOrDefault(categoryId, req.user.id);
 
   const transaction = await TransactionModel.update(req.params.id, req.user.id, {
@@ -84,6 +85,7 @@ const updateTransaction = asyncHandler(async (req, res) => {
     categoryId,
     date,
     notes,
+    accountId,
   });
 
   if (!transaction) throw new ApiError(404, 'Transaction not found');
@@ -125,6 +127,92 @@ const getCategoryBreakdown = asyncHandler(async (req, res) => {
     limit,
   });
   res.json({ success: true, data: { breakdown } });
+});
+
+function monthRange(date) {
+  const from = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
+  const to = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
+  return { from, to };
+}
+
+// Calculated, non-AI observations for the Insights page — plain
+// comparisons and aggregates derived from existing queries.
+const getInsights = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const currentRange = monthRange(now);
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevRange = monthRange(prevMonthDate);
+
+  const [
+    currentSummary,
+    prevSummary,
+    currentCategoryBreakdown,
+    prevCategoryBreakdown,
+    topMerchant,
+    highestExpense,
+  ] = await Promise.all([
+    TransactionModel.getSummary(req.user.id, currentRange),
+    TransactionModel.getSummary(req.user.id, prevRange),
+    TransactionModel.getCategoryBreakdown(req.user.id, { ...currentRange, type: 'expense' }),
+    TransactionModel.getCategoryBreakdown(req.user.id, { ...prevRange, type: 'expense' }),
+    TransactionModel.getTopMerchant(req.user.id, currentRange),
+    TransactionModel.getHighestExpense(req.user.id, currentRange),
+  ]);
+
+  const prevCategoryMap = new Map(prevCategoryBreakdown.map((c) => [c.category, c.total]));
+  const categoryDeltas = currentCategoryBreakdown
+    .map((c) => {
+      const prevTotal = prevCategoryMap.get(c.category) || 0;
+      const change = c.total - prevTotal;
+      const percentChange = prevTotal > 0 ? Math.round((change / prevTotal) * 100) : null;
+      return { category: c.category, total: c.total, prevTotal, change, percentChange };
+    })
+    .sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+
+  const insights = [];
+  categoryDeltas.slice(0, 3).forEach((c) => {
+    if (Math.abs(c.change) < 1) return;
+    if (c.change > 0) {
+      insights.push(
+        c.percentChange !== null
+          ? `${c.category} spending increased by ${c.percentChange}%.`
+          : `${c.category} spending increased by ₹${Math.round(c.change)}.`
+      );
+    } else {
+      insights.push(`${c.category} spending decreased by ₹${Math.round(Math.abs(c.change))}.`);
+    }
+  });
+
+  if (highestExpense) {
+    insights.push(`Your highest expense this month was ${highestExpense.title}.`);
+  }
+  if (topMerchant) {
+    insights.push(`You visited ${topMerchant.title} most often this month (${topMerchant.visits} times).`);
+  }
+
+  const daysElapsed = now.getDate();
+  const averageDailySpend = currentSummary.expense / Math.max(1, daysElapsed);
+  const savingsRate =
+    currentSummary.income > 0
+      ? Math.round(((currentSummary.income - currentSummary.expense) / currentSummary.income) * 100)
+      : 0;
+
+  const biggestCategoryGrowth = categoryDeltas.find((c) => c.change > 0) || null;
+
+  res.json({
+    success: true,
+    data: {
+      insights,
+      stats: {
+        averageDailySpend,
+        savingsRate,
+        mostVisitedMerchant: topMerchant ? topMerchant.title : null,
+        highestExpenseThisMonth: highestExpense || null,
+        biggestCategoryGrowth,
+        categoryDeltas,
+      },
+    },
+  });
 });
 
 // CSV Import — commits a batch of already-reviewed rows from the Import
@@ -224,4 +312,5 @@ module.exports = {
   getCategoryBreakdown,
   bulkImportTransactions,
   checkDuplicates,
+  getInsights,
 };

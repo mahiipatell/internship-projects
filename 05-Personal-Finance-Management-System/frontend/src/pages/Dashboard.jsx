@@ -28,6 +28,7 @@ function Dashboard() {
   const [monthly, setMonthly] = useState([]);
   const [breakdown, setBreakdown] = useState([]);
   const [budget, setBudget] = useState(null);
+  const [insights, setInsights] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [quickType, setQuickType] = useState('expense');
   const [submitting, setSubmitting] = useState(false);
@@ -40,6 +41,7 @@ function Dashboard() {
     transactionService.getMonthlyAnalytics(6).then(setMonthly);
     transactionService.getCategoryBreakdown({ limit: 6 }).then(setBreakdown);
     budgetService.getBudget().then(setBudget);
+    transactionService.getInsights().then(setInsights).catch(() => {});
   };
 
   useEffect(() => {
@@ -64,11 +66,18 @@ function Dashboard() {
 
   const savings = summary.balance > 0 ? summary.balance : 0;
   const monthLabel = new Date().toLocaleDateString('en-IN', { month: 'long' });
+  const todayLabel = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 
   const spentPercentage =
     budget?.enabled && budget.totalAllocated > 0
       ? Math.round((budget.totalSpent / budget.totalAllocated) * 100)
       : null;
+
+  const observation = insights?.insights?.[0];
 
   return (
     <div className="space-y-6">
@@ -77,7 +86,7 @@ function Dashboard() {
         <h1 className="text-2xl font-bold text-olive-900">
           {getGreeting()}, {user?.name?.split(' ')[0]} 👋
         </h1>
-        <p className="text-olive-700 mt-1">{monthLabel} Financial Overview</p>
+        <p className="text-olive-700 mt-1">{todayLabel} · {monthLabel} Financial Overview</p>
         <p className="text-sm text-olive-600/80 mt-3 max-w-lg">
           {spentPercentage !== null
             ? `You've spent ${spentPercentage}% of your planned budget. `
@@ -85,6 +94,7 @@ function Dashboard() {
           {savings > 0
             ? `You're on track to save ${formatCurrency(savings)} this month.`
             : "Add a few transactions to see how you're tracking this month."}
+          {observation ? ` ${observation}` : ''}
         </p>
       </Card>
 
@@ -97,8 +107,8 @@ function Dashboard() {
         <Link to="/financial-plan">
           <Button variant="secondary">📅 Monthly Financial Plan</Button>
         </Link>
-        <Link to="/analytics">
-          <Button variant="secondary">📊 Analytics</Button>
+        <Link to="/insights">
+          <Button variant="secondary">📈 Insights</Button>
         </Link>
         <Link to="/import">
           <Button variant="secondary">📥 Import Transactions</Button>

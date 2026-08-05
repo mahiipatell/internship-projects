@@ -4,10 +4,12 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
 import categoryService from '../../services/category.service';
+import accountService from '../../services/account.service';
 import { toInputDate } from '../../utils/formatDate';
 
 function TransactionForm({ initialData, defaultType, onSubmit, onCancel, submitting }) {
   const [categories, setCategories] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const {
     register,
     handleSubmit,
@@ -20,6 +22,7 @@ function TransactionForm({ initialData, defaultType, onSubmit, onCancel, submitt
       amount: initialData?.amount || '',
       type: initialData?.type || defaultType || 'expense',
       categoryId: initialData?.category_id || '',
+      accountId: initialData?.account_id || '',
       date: initialData ? toInputDate(initialData.date) : toInputDate(new Date()),
       notes: initialData?.notes || '',
     },
@@ -32,12 +35,17 @@ function TransactionForm({ initialData, defaultType, onSubmit, onCancel, submitt
   }, [selectedType]);
 
   useEffect(() => {
+    accountService.getAccounts().then(setAccounts);
+  }, []);
+
+  useEffect(() => {
     if (initialData) {
       reset({
         title: initialData.title,
         amount: initialData.amount,
         type: initialData.type,
         categoryId: initialData.category_id,
+        accountId: initialData.account_id || '',
         date: toInputDate(initialData.date),
         notes: initialData.notes || '',
       });
@@ -45,7 +53,12 @@ function TransactionForm({ initialData, defaultType, onSubmit, onCancel, submitt
   }, [initialData, reset]);
 
   const submit = (data) => {
-    onSubmit({ ...data, amount: Number(data.amount), categoryId: Number(data.categoryId) });
+    onSubmit({
+      ...data,
+      amount: Number(data.amount),
+      categoryId: Number(data.categoryId),
+      accountId: data.accountId ? Number(data.accountId) : null,
+    });
   };
 
   return (
@@ -98,14 +111,23 @@ function TransactionForm({ initialData, defaultType, onSubmit, onCancel, submitt
         />
       </div>
 
+      <Select label="Account (optional)" {...register('accountId')}>
+        <option value="">No specific account</option>
+        {accounts.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.icon} {a.name}
+          </option>
+        ))}
+      </Select>
+
       <div>
         <label className="text-sm font-medium text-olive-700 dark:text-gray-300">
           Notes (optional)
         </label>
         <textarea
           rows={3}
-          className="mt-1.5 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900
-            text-gray-900 dark:text-gray-100 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="mt-1.5 w-full rounded-xl border border-olive-900/10 dark:border-gray-700 bg-white dark:bg-gray-900
+            text-olive-900 dark:text-gray-100 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
           placeholder="Add any extra details..."
           {...register('notes')}
         />

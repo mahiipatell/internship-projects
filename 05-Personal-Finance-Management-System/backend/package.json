@@ -5,15 +5,15 @@
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "db:migrate": "node database/migrate.js"
+    "start": "node src/server.js",
+    "migrate": "node database/migrate.js",
+    "seed": "node database/seed.js"
   },
   "dependencies": {
     "express": "^4.19.2",
     "pg": "^8.12.0",
-    "bcrypt": "^5.1.1",
-    "jsonwebtoken": "^9.0.2",
+    "firebase-admin": "^12.6.0",
     "dotenv": "^16.4.5",
     "cors": "^2.8.5",
     "express-validator": "^7.2.0",

@@ -152,6 +152,18 @@ function ImportSummary({ result, stats, budget, onGoToDashboard, onViewTransacti
                 {formatCurrency(budget.totalRemaining)}
               </span>
             </div>
+            {budget.savingsGoal > 0 && (
+              <div>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-olive-600/70">Current Savings Goal Progress</span>
+                  <span className="font-semibold text-olive-900">
+                    {formatCurrency(budget.actualSavings)} / {formatCurrency(budget.savingsGoal)} (
+                    {Math.min(budget.savingsPercentage, 100)}%)
+                  </span>
+                </div>
+                <ProgressBar percentage={budget.savingsPercentage} isOverBudget={false} />
+              </div>
+            )}
           </div>
         </div>
       )}

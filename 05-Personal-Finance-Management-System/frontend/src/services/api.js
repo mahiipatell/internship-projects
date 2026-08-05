@@ -1,8 +1,8 @@
 import axios from 'axios';
+import { auth } from '../config/firebase';
 
 /**
  * Single shared Axios instance for the whole app. Every service module
- * (auth.service.js, transaction.service.js, etc. — added in later phases)
  * imports this instead of creating its own axios client, so base URL,
  * auth headers, and error handling stay consistent everywhere.
  */
@@ -13,25 +13,20 @@ const api = axios.create({
   },
 });
 
-// Attach the JWT (once auth exists in Phase 2) to every outgoing request.
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
+// Attach a fresh Firebase ID token to every outgoing request. getIdToken()
+// returns the cached token and silently refreshes it in the background
+// when it's close to expiring, so this stays cheap to call on every request.
+api.interceptors.request.use(async (config) => {
+  if (auth.currentUser) {
+    const token = await auth.currentUser.getIdToken();
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Centralized 401 handling: if the token is invalid/expired, clear it and
-// send the user back to login. This is filled in fully in Phase 2.
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default api;

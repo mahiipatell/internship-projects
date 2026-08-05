@@ -11,5 +11,9 @@ router.use('/categories', require('./category.routes'));
 router.use('/transactions', require('./transaction.routes'));
 router.use('/budget', require('./budget.routes'));
 router.use('/reports', require('./report.routes'));
+router.use('/accounts', require('./account.routes'));
+router.use('/savings-goals', require('./savingsGoal.routes'));
+router.use('/recurring', require('./recurring.routes'));
+router.use('/import-history', require('./importHistory.routes'));
 
 module.exports = router;

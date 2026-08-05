@@ -4,9 +4,11 @@ const links = [
   { to: '/dashboard', label: 'Dashboard', emoji: '🏠' },
   { to: '/transactions', label: 'Transactions', emoji: '💸' },
   { to: '/financial-plan', label: 'Monthly Financial Plan', emoji: '📅' },
-  { to: '/analytics', label: 'Analytics', emoji: '📈' },
+  { to: '/savings-goals', label: 'Savings Goals', emoji: '🎯' },
+  { to: '/recurring', label: 'Recurring', emoji: '🔁' },
+  { to: '/insights', label: 'Insights', emoji: '📈' },
   { to: '/reports', label: 'Reports', emoji: '📄' },
-  { to: '/profile', label: 'Profile', emoji: '👤' },
+  { to: '/settings', label: 'Settings', emoji: '⚙️' },
 ];
 
 function Sidebar({ open, onClose }) {

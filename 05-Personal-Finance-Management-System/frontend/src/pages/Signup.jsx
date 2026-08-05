@@ -6,10 +6,11 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 
 function Signup() {
-  const { signup } = useAuth();
+  const { signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
     register,
@@ -24,12 +25,25 @@ function Signup() {
     setServerError('');
     setSubmitting(true);
     try {
-      await signup({ name, email, password });
+      await signup({ name, email, password, rememberMe: true });
       navigate('/dashboard');
     } catch (err) {
-      setServerError(err.response?.data?.message || 'Signup failed. Please try again.');
+      setServerError(err.message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setServerError('');
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle(true);
+      navigate('/dashboard');
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -45,6 +59,16 @@ function Signup() {
           {serverError}
         </div>
       )}
+
+      <Button type="button" variant="secondary" className="w-full mb-4" onClick={handleGoogle} disabled={googleLoading}>
+        {googleLoading ? 'Signing in...' : 'Continue with Google'}
+      </Button>
+
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 h-px bg-olive-900/10" />
+        <span className="text-xs text-olive-600/50">or</span>
+        <div className="flex-1 h-px bg-olive-900/10" />
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
