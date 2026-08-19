@@ -170,6 +170,30 @@ const UserModel = {
 
         return rows[0];
 
+    },
+
+    async updateEmailVerified(id, emailVerified) {
+
+        const { rows } = await pool.query(
+
+            `
+            UPDATE users
+            SET email_verified=$1
+            WHERE id=$2
+            RETURNING ${PUBLIC_COLUMNS}
+            `,
+
+            [
+
+                emailVerified,
+                id
+
+            ]
+
+        );
+
+        return rows[0];
+
     }
 
 };

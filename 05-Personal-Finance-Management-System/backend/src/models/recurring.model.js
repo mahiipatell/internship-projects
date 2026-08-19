@@ -23,8 +23,8 @@ const RecurringModel = {
       WHERE r.user_id = $1
 
       ORDER BY
-      r.active DESC,
-      r.next_due ASC
+      r.is_active DESC,
+      r.next_run_date ASC
       `,
 
       [userId]
@@ -61,11 +61,13 @@ const RecurringModel = {
     {
 
       categoryId,
+      accountId,
       title,
       amount,
       type,
       frequency,
-      nextDue
+      startDate,
+      notes
 
     }
 
@@ -79,30 +81,34 @@ const RecurringModel = {
 
       user_id,
       category_id,
+      account_id,
       title,
       amount,
       type,
       frequency,
-      next_due,
-      active
+      start_date,
+      next_run_date,
+      is_active,
+      notes
 
       )
 
-      VALUES($1,$2,$3,$4,$5,$6,$7,true)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$8,true,$9)
 
       RETURNING *
-
       `,
 
       [
 
         userId,
         categoryId,
+        accountId || null,
         title,
         amount,
         type,
         frequency,
-        nextDue
+        startDate,
+        notes || null
 
       ]
 
@@ -120,12 +126,13 @@ const RecurringModel = {
     {
 
       categoryId,
+      accountId,
       title,
       amount,
       type,
       frequency,
-      nextDue,
-      active
+      isActive,
+      notes
 
     }
 
@@ -140,31 +147,32 @@ const RecurringModel = {
       SET
 
       category_id=$1,
-      title=$2,
-      amount=$3,
-      type=$4,
-      frequency=$5,
-      next_due=$6,
-      active=$7
+      account_id=$2,
+      title=$3,
+      amount=$4,
+      type=$5,
+      frequency=$6,
+      is_active=$7,
+      notes=$8
 
       WHERE
 
-      id=$8
-      AND user_id=$9
+      id=$9
+      AND user_id=$10
 
       RETURNING *
-
       `,
 
       [
 
         categoryId,
+        accountId || null,
         title,
         amount,
         type,
         frequency,
-        nextDue,
-        active,
+        isActive,
+        notes || null,
         id,
         userId
 
@@ -212,12 +220,11 @@ const RecurringModel = {
 
       user_id=$1
 
-      AND active=true
+      AND is_active=true
 
-      AND next_due <= $2
+      AND next_run_date <= $2
 
-      ORDER BY next_due
-
+      ORDER BY next_run_date
       `,
 
       [
@@ -233,7 +240,7 @@ const RecurringModel = {
 
   },
 
-  async advance(id,nextDate){
+  async advance(id,{ nextRunDate, lastRunDate }){
 
     await pool.query(
 
@@ -241,15 +248,15 @@ const RecurringModel = {
 
       UPDATE recurring_transactions
 
-      SET next_due=$1
+      SET next_run_date=$1, last_run_date=$2
 
-      WHERE id=$2
-
+      WHERE id=$3
       `,
 
       [
 
-        nextDate,
+        nextRunDate,
+        lastRunDate || null,
         id
 
       ]

@@ -9,9 +9,9 @@ const updateProfile = asyncHandler(async (req, res) => {
 
   const user = await UserModel.updateProfile(req.user.id, {
     name,
-    avatarUrl,
+    avatar_url: avatarUrl,
     currency,
-    monthlyIncome,
+    monthly_income: monthlyIncome,
     country,
     timezone,
     theme,

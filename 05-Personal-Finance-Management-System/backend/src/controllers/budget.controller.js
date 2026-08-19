@@ -28,8 +28,8 @@ async function buildBudgetResponse(userId, settings) {
     return {
       id: c.id,
       categoryId: c.category_id,
-      name: c.category_name,
-      icon: c.category_icon,
+      name: c.name,
+      icon: c.icon,
       allocated,
       spent,
       remaining: allocated - spent,
@@ -50,7 +50,7 @@ async function buildBudgetResponse(userId, settings) {
   const isOverAllocated = totalAllocated + savingsGoal > monthlyIncome;
 
   return {
-    enabled: true,
+    enabled: settings.enabled,
     monthlyIncome,
     savingsGoal,
     actualSavings,
@@ -68,7 +68,7 @@ async function buildBudgetResponse(userId, settings) {
 const getBudget = asyncHandler(async (req, res) => {
   const settings = await BudgetModel.getSettings(req.user.id);
 
-  if (!settings || !settings.is_enabled) {
+  if (!settings || !settings.enabled) {
     return res.json({ success: true, data: { enabled: false } });
   }
 
@@ -116,7 +116,7 @@ const addAllocation = asyncHandler(async (req, res) => {
   }
 
   const settings = await BudgetModel.getSettings(req.user.id);
-  if (!settings || !settings.is_enabled) {
+  if (!settings || !settings.enabled) {
     throw new ApiError(400, 'Enable your Monthly Financial Plan before adding allocations');
   }
 

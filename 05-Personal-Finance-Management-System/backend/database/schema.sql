@@ -2,7 +2,8 @@ DROP TABLE IF EXISTS budget_allocations CASCADE;
 DROP TABLE IF EXISTS budgets CASCADE;
 DROP TABLE IF EXISTS transactions CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
-DROP TABLE IF EXISTS import_batches CASCADE;
+DROP TABLE IF EXISTS accounts CASCADE;
+DROP TABLE IF EXISTS import_history CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 DROP FUNCTION IF EXISTS set_updated_at CASCADE;
@@ -66,7 +67,7 @@ CREATE TABLE categories (
     id                  SERIAL PRIMARY KEY,
 
     user_id             INTEGER REFERENCES users(id)
-                         ON DELETE CASCADE,
+                        ON DELETE CASCADE,
 
     name                VARCHAR(80) NOT NULL,
 
@@ -75,7 +76,7 @@ CREATE TABLE categories (
     color               VARCHAR(30),
 
     type                VARCHAR(20)
-                         CHECK(type IN ('income','expense')),
+                        CHECK(type IN ('income','expense')),
 
     is_default          BOOLEAN DEFAULT FALSE,
 
@@ -86,29 +87,37 @@ CREATE TABLE categories (
 );
 
 ---------------------------------------------------
--- IMPORT BATCHES
+-- ACCOUNTS (Cash / Bank / Credit Card / Wallet)
 ---------------------------------------------------
 
-CREATE TABLE import_batches(
+CREATE TABLE accounts (
 
-    id                  SERIAL PRIMARY KEY,
+    id          SERIAL PRIMARY KEY,
 
-    user_id             INTEGER NOT NULL REFERENCES users(id)
-                         ON DELETE CASCADE,
+    user_id     INTEGER NOT NULL REFERENCES users(id)
+                ON DELETE CASCADE,
 
-    source              VARCHAR(30)
-                         CHECK(source IN
-                         ('manual','csv','pdf','upi')),
+    name        VARCHAR(50) NOT NULL,
 
-    file_name           TEXT,
+    type        VARCHAR(20) NOT NULL
+                CHECK (type IN ('cash','bank','credit_card','wallet')),
 
-    imported_records    INTEGER DEFAULT 0,
+    icon        VARCHAR(10),
 
-    failed_records      INTEGER DEFAULT 0,
+    is_default  BOOLEAN NOT NULL DEFAULT FALSE,
 
-    created_at          TIMESTAMPTZ DEFAULT NOW()
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_account_per_user UNIQUE (user_id, name)
 
 );
+
+CREATE TRIGGER trg_accounts_updated
+BEFORE UPDATE ON accounts
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
 
 ---------------------------------------------------
 -- TRANSACTIONS
@@ -124,7 +133,7 @@ CREATE TABLE transactions(
     category_id             INTEGER REFERENCES categories(id)
                             ON DELETE SET NULL,
 
-    batch_id                INTEGER REFERENCES import_batches(id)
+    account_id              INTEGER REFERENCES accounts(id)
                             ON DELETE SET NULL,
 
     title                   VARCHAR(200) NOT NULL,
@@ -244,11 +253,14 @@ ON transactions(user_id,transaction_date DESC);
 CREATE INDEX idx_transactions_category
 ON transactions(category_id);
 
+CREATE INDEX idx_transactions_account
+ON transactions(account_id);
+
 CREATE INDEX idx_transactions_type
 ON transactions(type);
 
-CREATE INDEX idx_transactions_batch
-ON transactions(batch_id);
+CREATE INDEX idx_accounts_user
+ON accounts(user_id);
 
 CREATE INDEX idx_categories_user
 ON categories(user_id);
@@ -313,17 +325,17 @@ CREATE TABLE savings_goals (
         REFERENCES users(id)
         ON DELETE CASCADE,
 
-    title VARCHAR(150) NOT NULL,
+    name VARCHAR(100) NOT NULL,
 
-    target_amount NUMERIC(12,2) NOT NULL,
+    icon VARCHAR(10),
 
-    current_amount NUMERIC(12,2) DEFAULT 0,
+    target_amount NUMERIC(12,2) NOT NULL CHECK (target_amount > 0),
 
-    deadline DATE,
+    current_amount NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (current_amount >= 0),
+
+    target_date DATE,
 
     color VARCHAR(30),
-
-    icon VARCHAR(50),
 
     completed BOOLEAN DEFAULT FALSE,
 
@@ -355,6 +367,10 @@ CREATE TABLE recurring_transactions (
         REFERENCES categories(id)
         ON DELETE SET NULL,
 
+    account_id INTEGER
+        REFERENCES accounts(id)
+        ON DELETE SET NULL,
+
     title VARCHAR(150),
 
     amount NUMERIC(12,2),
@@ -366,9 +382,15 @@ CREATE TABLE recurring_transactions (
         CHECK(frequency IN
         ('daily','weekly','monthly','yearly')),
 
-    next_due DATE,
+    start_date DATE,
 
-    active BOOLEAN DEFAULT TRUE,
+    next_run_date DATE,
+
+    last_run_date DATE,
+
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    notes TEXT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
 
@@ -381,3 +403,26 @@ BEFORE UPDATE
 ON recurring_transactions
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
+
+---------------------------------------------------
+-- IMPORT HISTORY
+---------------------------------------------------
+
+CREATE TABLE import_history (
+    id                      SERIAL PRIMARY KEY,
+    user_id                 INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    file_name               VARCHAR(255) NOT NULL,
+    import_type             VARCHAR(30) NOT NULL,
+    detected_bank           VARCHAR(50),
+    parser_used             VARCHAR(50),
+    total_rows              INTEGER NOT NULL DEFAULT 0,
+    transactions_imported   INTEGER NOT NULL DEFAULT 0,
+    duplicates_skipped      INTEGER NOT NULL DEFAULT 0,
+    failed_rows             INTEGER NOT NULL DEFAULT 0,
+    import_duration_ms      INTEGER,
+    status                  VARCHAR(20) NOT NULL DEFAULT 'success' CHECK (status IN ('success','partial','failed')),
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_import_history_user
+ON import_history(user_id, created_at DESC);

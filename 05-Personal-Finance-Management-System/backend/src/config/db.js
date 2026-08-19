@@ -8,13 +8,6 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-console.log("===== ENV CHECK =====");
-console.log("__dirname:", __dirname);
-console.log("cwd:", process.cwd());
-console.log("DB_HOST:", process.env.DB_HOST);
-console.log("DB_PORT:", process.env.DB_PORT);
-console.log("=====================");
-
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -27,10 +20,6 @@ pool.on('error', (err) => {
   // Errors on idle clients (e.g. connection dropped by the DB) should not
   // crash the whole process — log and let the pool recover.
   console.error('Unexpected PostgreSQL error on idle client', err);
-});
-
-pool.on('connect', () => {
-  console.log('PostgreSQL pool: new client connected');
 });
 
 module.exports = pool;

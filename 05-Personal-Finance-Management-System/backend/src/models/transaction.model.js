@@ -22,18 +22,18 @@ function buildFilters({ userId, search, type, categoryId, from, to }) {
   }
   if (from) {
     params.push(from);
-    conditions.push(`t.date >= $${params.length}`);
+    conditions.push(`t.transaction_date >= $${params.length}`);
   }
   if (to) {
     params.push(to);
-    conditions.push(`t.date <= $${params.length}`);
+    conditions.push(`t.transaction_date <= $${params.length}`);
   }
 
   return { whereClause: conditions.join(' AND '), params };
 }
 
 const ALLOWED_SORT_COLUMNS = {
-  date: 't.date',
+  date: 't.transaction_date',
   amount: 't.amount',
   title: 't.title',
   created_at: 't.created_at',
@@ -53,17 +53,17 @@ const TransactionModel = {
     limit = 10,
   }) {
     const { whereClause, params } = buildFilters({ userId, search, type, categoryId, from, to });
-    const sortColumn = ALLOWED_SORT_COLUMNS[sortBy] || 't.date';
+    const sortColumn = ALLOWED_SORT_COLUMNS[sortBy] || 't.transaction_date';
     const order = sortOrder === 'asc' ? 'ASC' : 'DESC';
     const offset = (page - 1) * limit;
 
     const dataParams = [...params, limit, offset];
     const dataQuery = `
-      SELECT t.id, t.title, t.amount, t.type, t.date, t.notes, t.created_at,
-             c.id AS category_id, c.name AS category_name,
+      SELECT t.id, t.title, t.amount, t.type, t.transaction_date AS date, t.notes, t.created_at,
+             c.id AS category_id, c.name AS category_name, c.icon AS category_icon,
              a.id AS account_id, a.name AS account_name
       FROM transactions t
-      JOIN categories c ON c.id = t.category_id
+      LEFT JOIN categories c ON c.id = t.category_id
       LEFT JOIN accounts a ON a.id = t.account_id
       WHERE ${whereClause}
       ORDER BY ${sortColumn} ${order}, t.id DESC
@@ -85,9 +85,10 @@ const TransactionModel = {
 
   async findById(id, userId) {
     const { rows } = await pool.query(
-      `SELECT t.*, c.name AS category_name, a.name AS account_name
+      `SELECT t.*, t.transaction_date AS date, c.name AS category_name, c.icon AS category_icon,
+              a.name AS account_name
        FROM transactions t
-       JOIN categories c ON c.id = t.category_id
+       LEFT JOIN categories c ON c.id = t.category_id
        LEFT JOIN accounts a ON a.id = t.account_id
        WHERE t.id = $1 AND t.user_id = $2`,
       [id, userId]
@@ -97,9 +98,9 @@ const TransactionModel = {
 
   async create(userId, { title, amount, type, categoryId, date, notes, accountId }) {
     const { rows } = await pool.query(
-      `INSERT INTO transactions (user_id, category_id, account_id, title, amount, type, date, notes)
+      `INSERT INTO transactions (user_id, category_id, account_id, title, amount, type, transaction_date, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING *`,
+       RETURNING *, transaction_date AS date`,
       [userId, categoryId, accountId || null, title, amount, type, date, notes || null]
     );
     return rows[0];
@@ -111,7 +112,7 @@ const TransactionModel = {
   async existsSimilar(userId, { title, amount, date }) {
     const { rows } = await pool.query(
       `SELECT id FROM transactions
-       WHERE user_id = $1 AND date = $2 AND amount = $3 AND title ILIKE $4
+       WHERE user_id = $1 AND transaction_date = $2 AND amount = $3 AND title ILIKE $4
        LIMIT 1`,
       [userId, date, amount, title]
     );
@@ -121,9 +122,9 @@ const TransactionModel = {
   async update(id, userId, { title, amount, type, categoryId, date, notes, accountId }) {
     const { rows } = await pool.query(
       `UPDATE transactions
-       SET title = $1, amount = $2, type = $3, category_id = $4, date = $5, notes = $6, account_id = $7
+       SET title = $1, amount = $2, type = $3, category_id = $4, transaction_date = $5, notes = $6, account_id = $7
        WHERE id = $8 AND user_id = $9
-       RETURNING *`,
+       RETURNING *, transaction_date AS date`,
       [title, amount, type, categoryId, date, notes || null, accountId || null, id, userId]
     );
     return rows[0];
@@ -161,12 +162,12 @@ const TransactionModel = {
 
   async getMonthlyBreakdown(userId, months = 6) {
     const { rows } = await pool.query(
-      `SELECT to_char(date_trunc('month', date), 'YYYY-MM') AS month,
+      `SELECT to_char(date_trunc('month', transaction_date), 'YYYY-MM') AS month,
               type,
               COALESCE(SUM(amount), 0)::float AS total
        FROM transactions
        WHERE user_id = $1
-         AND date >= date_trunc('month', CURRENT_DATE) - ($2 || ' months')::interval
+         AND transaction_date >= date_trunc('month', CURRENT_DATE) - ($2 || ' months')::interval
        GROUP BY month, type
        ORDER BY month ASC`,
       [userId, months - 1]
@@ -179,7 +180,7 @@ const TransactionModel = {
     let query = `
       SELECT c.name AS category, COALESCE(SUM(t.amount), 0)::float AS total
       FROM transactions t
-      JOIN categories c ON c.id = t.category_id
+      LEFT JOIN categories c ON c.id = t.category_id
       WHERE ${whereClause}
       GROUP BY c.name
       ORDER BY total DESC
@@ -194,11 +195,11 @@ const TransactionModel = {
   async listAllForExport(userId, { from, to } = {}) {
     const { whereClause, params } = buildFilters({ userId, from, to });
     const { rows } = await pool.query(
-      `SELECT t.title, t.amount, t.type, t.date, t.notes, c.name AS category
+      `SELECT t.title, t.amount, t.type, t.transaction_date AS date, t.notes, c.name AS category
        FROM transactions t
-       JOIN categories c ON c.id = t.category_id
+       LEFT JOIN categories c ON c.id = t.category_id
        WHERE ${whereClause}
-       ORDER BY t.date DESC`,
+       ORDER BY t.transaction_date DESC`,
       params
     );
     return rows;
@@ -221,9 +222,9 @@ const TransactionModel = {
   async getHighestExpense(userId, { from, to } = {}) {
     const { whereClause, params } = buildFilters({ userId, from, to, type: 'expense' });
     const { rows } = await pool.query(
-      `SELECT t.title, t.amount, t.date, c.name AS category_name
+      `SELECT t.title, t.amount, t.transaction_date AS date, c.name AS category_name
        FROM transactions t
-       JOIN categories c ON c.id = t.category_id
+       LEFT JOIN categories c ON c.id = t.category_id
        WHERE ${whereClause}
        ORDER BY t.amount DESC
        LIMIT 1`,
