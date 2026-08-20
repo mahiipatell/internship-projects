@@ -1,6 +1,6 @@
 # Restaurant Management & Billing System
 
-A full-stack, production-quality restaurant management and billing platform built with **React (Vite) + Tailwind CSS** on the frontend and **Node.js/Express + PostgreSQL** on the backend, with JWT authentication, role-based access control, and PDF invoice generation via PDFKit.
+A full-stack restaurant management and billing platform built with **React (Vite) + Tailwind CSS** on the frontend and **Node.js/Express + PostgreSQL** on the backend. The application includes JWT authentication, role-based access control, order and table management, billing, payment tracking, reporting, and PDF invoice generation via PDFKit.
 
 ---
 
