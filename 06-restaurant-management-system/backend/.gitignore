@@ -1,0 +1,5 @@
+node_modules/
+.env
+invoices/*.pdf
+*.log
+.DS_Store

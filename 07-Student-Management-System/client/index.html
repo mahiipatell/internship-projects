@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Student Management System — attendance, exams, assignments and academic records." />
+    <title>Student Management System</title>
+    <script>
+      // Applies the stored theme before first paint so there is no flash of the
+      // wrong theme. Mirrors the logic in src/lib/theme.tsx.
+      (function () {
+        try {
+          var stored = localStorage.getItem("sms-theme") || "system";
+          var dark =
+            stored === "dark" ||
+            (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

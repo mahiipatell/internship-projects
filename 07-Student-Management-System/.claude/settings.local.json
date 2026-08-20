@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm install-scripts *)",
+      "Bash(npx prisma *)",
+      "Bash(net start *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(rtk curl *)",
+      "Bash(rtk ls *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -c /tmp/cj.txt -X POST http://localhost:4000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@sms.test\",\"password\":\"Password123\"}')",
+      "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' -X POST http://localhost:4000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@sms.test\",\"password\":\"wrong\"}')",
+      "Bash(curl -s -b /tmp/cj.txt -c /tmp/cj2.txt -X POST http://localhost:4000/api/auth/refresh)",
+      "Bash(curl -s -b /tmp/cj2.txt -X POST http://localhost:4000/api/auth/logout)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' -b /tmp/cj2.txt -X POST http://localhost:4000/api/auth/refresh)",
+      "Bash(netstat -ano)",
+      "Bash(rtk grep *)",
+      "Bash(rtk npm *)",
+      "Bash(rtk read *)"
+    ],
+    "default mode": "auto"
+  }
+}
